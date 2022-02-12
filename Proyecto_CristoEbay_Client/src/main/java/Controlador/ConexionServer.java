@@ -7,6 +7,7 @@ package Controlador;
 
 import Modelo.SubastaCln;
 import Vista.Login;
+import Vista.Ventana;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,15 +25,44 @@ public class ConexionServer {
     static PrintWriter out;
     static BufferedReader in;
     static Socket sc;
-    Login lg = new Login();
+    Login lg;
+    Ventana v;
+    String buffer;
+    ArrayList<SubastaCln> subastas;
     
     public ConexionServer() throws IOException{
         sc = new Socket("localhost",6666);
         out = new PrintWriter(sc.getOutputStream(), true);
     }
     
+    public ConexionServer(Login lg) throws IOException{
+        sc = new Socket("localhost",6666);
+        out = new PrintWriter(sc.getOutputStream(), true);
+        this.lg = lg;
+    }
+    
+    public void setLogin(Login lg){
+        this.lg = lg;
+    }
+    
+    public void setVentana(Ventana v){
+        this.v = v;
+    }
+    
+    public Ventana getVentana(){
+        return v;
+    }
+
+    public String getBuffer() {
+        return buffer;
+    }
+    
+    
+    public ConexionServer getConexionServer(){
+        return this;
+    }
     public void logearse(){
-        out.println("PROTOCOLCRISTOBAY1.0#LOGIN#"+lg.getLogin().getCampoLogin()+"#"+lg.getLogin().getCampoPass()+"");
+        out.println("PROTOCOLCRISTOBAY1.0#LOGIN#"+lg.getNombreUsu()+"#"+lg.getPassUsu());
     }
     
     public String respuestaLogin(){
@@ -44,6 +74,7 @@ public class ConexionServer {
         } catch (IOException ex) {
             Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         }
+        buffer=str;
         return str;
     }
     
@@ -54,13 +85,13 @@ public class ConexionServer {
     
     public void pedirSubastasPorEstado(String estado){
         
-        System.out.println("aaa");
-        out.println("PROTOCOLCRISTOBAY1.0#GET_SUBASTAS_"+"abierta"+"#"+lg.getLogin().getCampoLogin()+"#"+this.getPalabraSecreta(this.respuestaLogin()));
+        System.out.println(lg.getNombreUsu());
+        out.println("PROTOCOLCRISTOBAY1.0#GET_SUBASTAS_"+estado+"#"+lg.getNombreUsu()+"#"+this.getPalabraSecreta(buffer));
     }
     
     public ArrayList<SubastaCln> getSubastas() throws IOException{
         
-        ArrayList<SubastaCln> subastas = new ArrayList<>();
+        subastas = new ArrayList<>();
         String str="";
         String[] cadDiv = str.split("#");
         int contSub = 4;
@@ -68,7 +99,7 @@ public class ConexionServer {
         in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
         if((str = in.readLine()).contains("ERROR")){
             System.out.println("Hubo un error en su solicitud, intentelo de nuevo mas tarde");
-        }else{
+        }else if((str = in.readLine()).contains("AUCTION_AVAILABLE")){
             System.out.println(str);
             int numSubastas = Integer.valueOf(cadDiv[3]);
             for(int i = numSubastas;i>0;i--){

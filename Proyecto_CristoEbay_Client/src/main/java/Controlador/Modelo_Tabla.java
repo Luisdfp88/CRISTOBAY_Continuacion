@@ -7,8 +7,7 @@ package Controlador;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import Controlador.*; 
-import Vista.Ventana;
+import Modelo.SubastaCln;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,18 +18,23 @@ import java.util.ArrayList;
  */
 public class Modelo_Tabla{
     private DefaultTableModel modelo;
-    ConexionServer cs;
+    public ConexionServer cs;
+    ArrayList <SubastaCln> ar;
+    public Modelo_Tabla(ConexionServer cs) throws IOException{
+        this.cs = cs;
+    }
+    
 
-    public TableModel cargarTabla() throws SQLException, IOException{
-        cs = new ConexionServer();
-        System.out.println(cs.respuestaLogin());
-        System.out.println(cs.getPalabraSecreta(cs.respuestaLogin()));
+    public TableModel Modelo() throws SQLException, IOException{
+        System.out.println("Aqui eee");
+        String str = cs.getBuffer();
+        System.out.println(cs.getPalabraSecreta(str));
         cs.pedirSubastasPorEstado("abierta");
-        cs.getSubastas();
+        ar = cs.getSubastas();
         String col[] = {"Usuario","Articulo","Fecha Inicio","Fecha Fin","Puja Actual"};
         modelo = new DefaultTableModel(col, 0);
-        for(int i = 0;i<cs.getSubastas().size();i++){
-        String obj[] = {"User",String.valueOf(cs.getSubastas().get(0).getCodProd()),cs.getSubastas().get(0).getFechaInicio(),cs.getSubastas().get(0).getFechaFin(),cs.getSubastas().get(0).getEstado()};
+        for(int i = 0;i<ar.size();i++){
+        String obj[] = {"User",String.valueOf(ar.get(0).getCodProd()),ar.get(0).getFechaInicio(),ar.get(0).getFechaFin(),ar.get(0).getEstado()};
             modelo.addRow(obj);  
         }
         return modelo;

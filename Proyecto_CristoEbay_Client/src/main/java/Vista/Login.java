@@ -25,7 +25,7 @@ public class Login extends javax.swing.JFrame{
         initComponents();
     }
     public Login getLogin(){
-        return lg;
+        return this;
     }
     
     public String getCampoLogin(){
@@ -35,6 +35,24 @@ public class Login extends javax.swing.JFrame{
     public String getCampoPass(){
         return campoPassword.getText();
     }
+
+    public String getNombreUsu() {
+        return nombreUsu;
+    }
+
+    public void setNombreUsu(String nombreUsu) {
+        this.nombreUsu = nombreUsu;
+    }
+
+    public String getPassUsu() {
+        return passUsu;
+    }
+
+    public void setPassUsu(String passUsu) {
+        this.passUsu = passUsu;
+    }
+    
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -123,14 +141,24 @@ public class Login extends javax.swing.JFrame{
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
+        nombreUsu = campoUsuario.getText();
+        passUsu = campoPassword.getText();
+        try {
+            cs =  new ConexionServer(lg);
+        } catch (IOException ex) {
+            Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+        }
         cs.logearse();
-        if(cs.respuestaLogin().contains("WELLCOME")){
-            new Ventana().setVisible(true);
+        String str = cs.respuestaLogin();
+        if(str.contains("WELLCOME")){
+            new Ventana(cs).setVisible(true);
             try {
                 this.finalize();
             } catch (Throwable ex) {
                 Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }else{
+            System.out.println("Ha fallado");
         }
                 
             
@@ -157,14 +185,8 @@ public class Login extends javax.swing.JFrame{
             public synchronized void run() {
                 lg = new Login();
                 lg.setVisible(true);
-                try {
-                    cs =  new ConexionServer();
-                } catch (IOException ex) {
-                    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
-                }
             }
         });
-    
     }
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -178,4 +200,6 @@ public class Login extends javax.swing.JFrame{
     // End of variables declaration//GEN-END:variables
     static ConexionServer cs;
     static Login lg;
+    String nombreUsu;
+    String passUsu;
 }
