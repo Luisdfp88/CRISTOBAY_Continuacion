@@ -26,15 +26,13 @@ public class Modelo_Tabla{
     
 
     public TableModel Modelo() throws SQLException, IOException{
-        System.out.println("Aqui eee");
-        String str = cs.getBuffer();
-        System.out.println(cs.getPalabraSecreta(str));
+        System.out.println(cs.getPalabraSecreta(cs.getBuffer()));
         cs.pedirSubastasPorEstado("abierta");
         ar = cs.getSubastas();
-        String col[] = {"Usuario","Articulo","Fecha Inicio","Fecha Fin","Puja Actual"};
+        String col[] = {"Usuario","Articulo","Fecha de Inicio","Fecha Fin","Puja Actual"};
         modelo = new DefaultTableModel(col, 0);
-        for(int i = 0;i<ar.size();i++){
-        String obj[] = {"User",String.valueOf(ar.get(0).getCodProd()),ar.get(0).getFechaInicio(),ar.get(0).getFechaFin(),ar.get(0).getEstado()};
+        for(int i = 0;i!=ar.size();i++){
+        String obj[] = {ar.get(i).getNombreVend(),ar.get(i).getNombreProd(),ar.get(i).getFechaInicio(),ar.get(i).getFechaFin(),ar.get(i).getEstado()};
             modelo.addRow(obj);  
         }
         return modelo;

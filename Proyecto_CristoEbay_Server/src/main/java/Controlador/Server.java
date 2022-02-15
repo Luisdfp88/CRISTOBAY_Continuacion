@@ -5,6 +5,7 @@
  */
 package Controlador;
 
+import Modelo.Protocolo;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -14,6 +15,13 @@ import java.util.ArrayList;
  * @author Luis
  */
 public class Server {
+    static Protocolo ptc = new Protocolo();
+
+    public Protocolo getPtc() {
+        return ptc;
+    }
+    
+    
     public static void main(String args[]) throws IOException {
         int portNumber = Integer.parseInt(args[0]);
         boolean listening = true;
@@ -23,7 +31,7 @@ public class Server {
             public void run(){
                 try(ServerSocket svsc = new ServerSocket(portNumber)){
                     while(listening){
-                        ArrayHebras.add(new HebraServer(svsc.accept()));
+                        ArrayHebras.add(new HebraServer(svsc.accept(), ptc));
                         ArrayHebras.get(ArrayHebras.size()-1).start();
                     }
                 }catch(IOException e){

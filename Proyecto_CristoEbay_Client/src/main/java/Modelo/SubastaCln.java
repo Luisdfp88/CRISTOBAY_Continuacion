@@ -14,13 +14,54 @@ public class SubastaCln {
     String fechaInicio;
     String fechaFin;
     String estado;
-    public SubastaCln(int c, String fi, String ff, String e){
+    String nombreProd;
+    String nombreVend;
+    int PrecioInicial;
+    int PrecioActual;
+    public SubastaCln(int c, String fi, String ff, String e, String np, String nv, int pi, int pa){
         codProd = c;
         fechaInicio = fi;
         fechaFin = ff;
         estado = e;
+        nombreProd = np;
+        nombreVend = nv;
+        PrecioInicial = pi;
+        PrecioActual = pa;
     }
 
+    public String getNombreProd() {
+        return nombreProd;
+    }
+
+    public void setNombreProd(String nombreProd) {
+        this.nombreProd = nombreProd;
+    }
+
+    public String getNombreVend() {
+        return nombreVend;
+    }
+
+    public void setNombreVend(String nombreVend) {
+        this.nombreVend = nombreVend;
+    }
+
+    public int getPrecioInicial() {
+        return PrecioInicial;
+    }
+
+    public void setPrecioInicial(int PrecioInicial) {
+        this.PrecioInicial = PrecioInicial;
+    }
+
+    public int getPrecioActual() {
+        return PrecioActual;
+    }
+
+    public void setPrecioActual(int PrecioActual) {
+        this.PrecioActual = PrecioActual;
+    }
+
+    
     public int getCodProd() {
         return codProd;
     }

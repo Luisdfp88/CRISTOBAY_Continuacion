@@ -66,46 +66,44 @@ public class ConexionServer {
     }
     
     public String respuestaLogin(){
-        String str="";
+        
         try {
             in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
-            str = in.readLine();
-            System.out.println(str);
+            buffer = in.readLine();
+            System.out.println(buffer);
         } catch (IOException ex) {
             Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         }
-        buffer=str;
-        return str;
+        return buffer;
     }
     
     public String getPalabraSecreta(String str){
-        String st = str.split("#")[5];
+        String st = str.split("#")[4];
         return st;
     }
     
     public void pedirSubastasPorEstado(String estado){
-        
-        System.out.println(lg.getNombreUsu());
-        out.println("PROTOCOLCRISTOBAY1.0#GET_SUBASTAS_"+estado+"#"+lg.getNombreUsu()+"#"+this.getPalabraSecreta(buffer));
+        out.println("PROTOCOLCRISTOBAY1.0#GET_SUBASTAS_"+estado+"#"+lg.getNombreUsu()+"#"+lg.getCs().getPalabraSecreta(buffer));
     }
     
     public ArrayList<SubastaCln> getSubastas() throws IOException{
         
         subastas = new ArrayList<>();
         String str="";
-        String[] cadDiv = str.split("#");
-        int contSub = 4;
-        int contProd = 5;
+        int contSub = 3;
         in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
-        if((str = in.readLine()).contains("ERROR")){
+        str = in.readLine();
+        String[] cadDiv = str.split("#");
+        if(str.contains("ERROR")){
             System.out.println("Hubo un error en su solicitud, intentelo de nuevo mas tarde");
-        }else if((str = in.readLine()).contains("AUCTION_AVAILABLE")){
+        }else if(str.contains("AUCTION_AVAILABLE")){
             System.out.println(str);
-            int numSubastas = Integer.valueOf(cadDiv[3]);
-            for(int i = numSubastas;i>0;i--){
-                subastas.add(new SubastaCln(Integer.valueOf(cadDiv[contProd].split("@")[1]),cadDiv[contSub].split("@")[2],cadDiv[contSub].split("@")[3],cadDiv[contSub].split("@")[4]));
-                contSub=contSub+2;
-                contProd=contProd+2;
+            int numSubastas = Integer.valueOf(cadDiv[2]);
+            
+            for(int i = 0;i<numSubastas;i++){
+                String sub[] = cadDiv[contSub].split("@");
+                subastas.add(new SubastaCln(Integer.valueOf(sub[0]),sub[1],sub[2],sub[3],sub[4],sub[5],Integer.valueOf(sub[6]),7));
+                contSub++;
             }
         }
         

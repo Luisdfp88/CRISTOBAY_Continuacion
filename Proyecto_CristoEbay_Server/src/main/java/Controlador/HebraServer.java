@@ -17,10 +17,12 @@ import java.net.Socket;
  */
 public class HebraServer extends Thread{
     private Socket sc;
+    private Protocolo ptc;
     
-    public HebraServer(Socket sc){
+    public HebraServer(Socket sc, Protocolo ptc){
         super("HebraServer");
         this.sc = sc;
+        this.ptc = ptc;
     }
     
     public HebraServer getHebraServer(){
@@ -37,7 +39,7 @@ public class HebraServer extends Thread{
         ){
             String inputLine, outputLine;
             while((inputLine = in.readLine()) != null){
-                outputLine = new Protocolo().procesarInput(inputLine);
+                outputLine = ptc.procesarInput(inputLine);
                 out.println(outputLine);
                 System.out.println();
             }

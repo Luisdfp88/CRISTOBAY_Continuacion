@@ -51,6 +51,10 @@ public class Login extends javax.swing.JFrame{
     public void setPassUsu(String passUsu) {
         this.passUsu = passUsu;
     }
+
+    public ConexionServer getCs() {
+        return cs;
+    }
     
     
     @SuppressWarnings("unchecked")
@@ -152,11 +156,7 @@ public class Login extends javax.swing.JFrame{
         String str = cs.respuestaLogin();
         if(str.contains("WELLCOME")){
             new Ventana(cs).setVisible(true);
-            try {
-                this.finalize();
-            } catch (Throwable ex) {
-                Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            this.dispose();
         }else{
             System.out.println("Ha fallado");
         }

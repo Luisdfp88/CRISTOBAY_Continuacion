@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,11 +21,12 @@ import java.util.logging.Logger;
  */
 public class Protocolo {
     public ResultSet rs;
-    public Socket sc;
-    PrintWriter out;
+    public ResultSet rsa;
+    public ResultSet rsv;
     String output;
+    ArrayList<String> tokens = new ArrayList<>();
+    ArrayList<String> usuariosLogeados = new ArrayList<>();
     public String procesarInput(String input) throws IOException, SQLException{
-        System.out.println("AQUiiiiiii");
             Conexion c = new Conexion();
             System.out.println(input);
             if(input.contains("LOGIN")){
@@ -32,19 +34,29 @@ public class Protocolo {
                 try {
                     rs = c.getConexion().executeQuery("SELECT * FROM usuario WHERE login='"+input.substring(27, aux1)+"';");
                     c.getConexion().close();
-                    sc = new Socket("localhost",6666);
-                    out = new PrintWriter(sc.getOutputStream(), true);
                     if(rs.next()){
-                        if(input.substring(aux1+1, input.length()).equals(rs.getString("clave"))){
-                            output = ("PROTOCOLCRISTOBAY1.0#WELLCOME#"+input.substring(27, aux1)+"#WITH_TOKEN#"+new randomWordGen().generarPalabra());
-                            System.out.println("Login correcto");
+                            if(input.substring(aux1+1, input.length()).equals(rs.getString("clave"))){
+                                String token = new randomWordGen().generarPalabra();
+                                output = ("PROTOCOLCRISTOBAY1.0#WELLCOME#"+input.substring(27, aux1)+"#WITH_TOKEN#"+token);
+                                for(int h = 0;h<usuariosLogeados.size();h++){
+                                    if(input.substring(27, aux1).equals(usuariosLogeados.get(h))){
+                                        System.out.println("Cuenta en uso");
+                                        output = "Cuenta en uso";
+                                        return output;
+                                    }
+                                }
+                                usuariosLogeados.add(input.substring(27, aux1));
+                                System.out.println("Login correcto");
+                                tokens.add(token);
+                                for(int i = 0;i<tokens.size();i++){
+                                    System.out.println(tokens.get(i));
+                                }
+                            }else{
+                                System.out.println(input.substring(27, aux1+1));
+                                output = ("PROTOCOLCRISTOBAY1.0#ERROR#BAD_LOGIN");
+                                System.out.println("Contraseña incorrecta");
 
-                        }else{
-                            System.out.println(input.substring(27, aux1+1));
-                            output = ("PROTOCOLCRISTOBAY1.0#ERROR#BAD_LOGIN");
-                            System.out.println("Contraseña incorrecta");
-
-                        }
+                            }
                     }else{
                         System.out.println(input.substring(27, aux1+1));
                         output = "Usuario no existe";
@@ -54,20 +66,45 @@ public class Protocolo {
                     Logger.getLogger(Protocolo.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }else if(input.contains("GET_SUBASTAS")){
-                rs = c.getConexion().executeQuery("SELECT * FROM subastar");
-                c.getConexion().close();
-                sc = new Socket("localhost",6666);
-                out = new PrintWriter(sc.getOutputStream(), true);
-                int j = 0;
-                while(rs.next()){
-                    j++;
-                }
-                String str = "PROTOCOLCRISTOBAY1.0#AUCTION_AVAILABLE#"+j;
-                while(rs.next()){
-                    str = str+"#"+rs.getString("id_articulo")+"@"+rs.getString("fecha_inicio")+"@"+rs.getString("fecha_fin")+"@"+rs.getString("estado");
+                for(int i = 0;i<usuariosLogeados.size();i++){
+                    String nombreArt = "";
+                    String nombreUsu = "";
+                    if(input.split("#")[2].equals(usuariosLogeados.get(i))&&input.split("#")[3].equals(tokens.get(i))){
+                        rs = c.getConexion().executeQuery("SELECT * FROM subastar");
+                        rsa = c.getConexion().executeQuery("SELECT * FROM articulo");
+                        rsv  = c.getConexion().executeQuery("SELECT * FROM usuario");
+                        c.getConexion().close();
+                        int j = 0;
+                        while(rs.next()){
+                            j++;
+                        }
+                        rs.beforeFirst();
+                        output = "PROTOCOLCRISTOBAY1.0#AUCTION_AVAILABLE#"+j;
+                        while(rs.next()){
+                            
+                            rsa.beforeFirst();
+                            while(rsa.next()){
+                                if(rsa.getInt("id_articulo")==(rs.getInt("id_articulo"))){
+                                    nombreArt = rsa.getString("nombre");
+                                }
+                            }
+                            rsv.beforeFirst();
+                            while(rsv.next()){
+                                if(rsv.getInt("id_usuario")==(rs.getInt("id_usuario"))){
+                                    nombreUsu = rsv.getString("nombre");
+                                }
+                            }
+                            output = output+"#"+rs.getInt("id_articulo")+"@"+rs.getString("fecha_inicio")+"@"+rs.getString("fecha_fin")+"@"+rs.getString("estado")+"@"+nombreArt+"@"+nombreUsu+"@"+rs.getString("precio_salida")+3;
+        //                    rsa.next();
+        //                    rsv.next();
+                        }
+                        System.out.print(output);
+                    }
+                    else{
+                        output = "Invalid Token";
+                    }
                 }
                 
-                output = str;
             }
         return output;
     }
