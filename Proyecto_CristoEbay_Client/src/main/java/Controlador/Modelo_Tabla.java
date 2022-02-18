@@ -20,19 +20,25 @@ public class Modelo_Tabla{
     private DefaultTableModel modelo;
     public ConexionServer cs;
     ArrayList <SubastaCln> ar;
+    String estado = "ALL";
     public Modelo_Tabla(ConexionServer cs) throws IOException{
         this.cs = cs;
     }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+    
     
 
     public TableModel Modelo() throws SQLException, IOException{
         System.out.println(cs.getPalabraSecreta(cs.getBuffer()));
-        cs.pedirSubastasPorEstado("abierta");
+        cs.pedirSubastasPorEstado(estado);
         ar = cs.getSubastas();
-        String col[] = {"Usuario","Articulo","Fecha de Inicio","Fecha Fin","Puja Actual"};
+        String col[] = {"Usuario","Articulo","Fecha de Inicio","Fecha Fin","Estado","Puja Actual"};
         modelo = new DefaultTableModel(col, 0);
-        for(int i = 0;i!=ar.size();i++){
-        String obj[] = {ar.get(i).getNombreVend(),ar.get(i).getNombreProd(),ar.get(i).getFechaInicio(),ar.get(i).getFechaFin(),ar.get(i).getEstado()};
+        for(int i = 0;i<ar.size();i++){
+        String obj[] = {ar.get(i).getNombreVend(),ar.get(i).getNombreProd(),ar.get(i).getFechaInicio(),ar.get(i).getFechaFin(),ar.get(i).getEstado(),String.valueOf(ar.get(i).getPrecioActual())};
             modelo.addRow(obj);  
         }
         return modelo;

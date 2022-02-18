@@ -23,6 +23,7 @@ public class Protocolo {
     public ResultSet rs;
     public ResultSet rsa;
     public ResultSet rsv;
+    public ResultSet rsp;
     String output;
     ArrayList<String> tokens = new ArrayList<>();
     ArrayList<String> usuariosLogeados = new ArrayList<>();
@@ -41,7 +42,7 @@ public class Protocolo {
                                 for(int h = 0;h<usuariosLogeados.size();h++){
                                     if(input.substring(27, aux1).equals(usuariosLogeados.get(h))){
                                         System.out.println("Cuenta en uso");
-                                        output = "Cuenta en uso";
+                                        output = "PROTOCOLCRISTOBAY1.0#ERROR#BAD_LOGIN";
                                         return output;
                                     }
                                 }
@@ -69,10 +70,37 @@ public class Protocolo {
                 for(int i = 0;i<usuariosLogeados.size();i++){
                     String nombreArt = "";
                     String nombreUsu = "";
+                    int pujaAlta = 0;
                     if(input.split("#")[2].equals(usuariosLogeados.get(i))&&input.split("#")[3].equals(tokens.get(i))){
-                        rs = c.getConexion().executeQuery("SELECT * FROM subastar");
+                        String stra = "";
+                        if(input.split("#")[1].split("_")[2].equals("ALL")){
+                            rs = c.getConexion().executeQuery("SELECT * FROM subastar");
+                        }else{
+                            switch (input.split("#")[1].split("_")[2]) {
+                                case "OPEN":
+                                    stra="Abierta";
+                                    break;
+                                case "CLOSEDBYBUY":
+                                    stra="Cerrada por compra";
+                                    break;
+                                case "CLOSEDBYDROP":
+                                    stra="Cerrada por eliminación";
+                                    break;
+                                case "CLOSEDBYTIME":
+                                    stra="Cerrada por tiempo";
+                                    break;
+                                case "CREATED":
+                                    stra="creada";
+                                    break;
+                                default:
+                                    break;
+                            }
+                            rs = c.getConexion().executeQuery("SELECT * FROM subastar WHERE estado = '"+stra+"'");
+                        }
+                        
                         rsa = c.getConexion().executeQuery("SELECT * FROM articulo");
                         rsv  = c.getConexion().executeQuery("SELECT * FROM usuario");
+                        rsp = c.getConexion().executeQuery("SELECT * FROM pujar");
                         c.getConexion().close();
                         int j = 0;
                         while(rs.next()){
@@ -94,17 +122,32 @@ public class Protocolo {
                                     nombreUsu = rsv.getString("nombre");
                                 }
                             }
-                            output = output+"#"+rs.getInt("id_articulo")+"@"+rs.getString("fecha_inicio")+"@"+rs.getString("fecha_fin")+"@"+rs.getString("estado")+"@"+nombreArt+"@"+nombreUsu+"@"+rs.getString("precio_salida")+3;
+                            rsp.beforeFirst();
+                            pujaAlta=0;
+                            while(rsp.next()){
+                                if(rsp.getInt("id_articulo")==rs.getInt("id_articulo")){
+                                    if(rsp.getInt("cantidad_pujada")>pujaAlta){
+                                        pujaAlta = rsp.getInt("cantidad_pujada");
+                                    }
+                                }
+                            }
+                            output = output+"#"+rs.getInt("id_articulo")+"@"+rs.getString("fecha_inicio")+"@"+rs.getString("fecha_fin")+"@"+rs.getString("estado")+"@\""+nombreArt+"\"@"+nombreUsu+"@"+rs.getString("precio_salida")+"@"+pujaAlta;
         //                    rsa.next();
         //                    rsv.next();
                         }
                         System.out.print(output);
                     }
                     else{
-                        output = "Invalid Token";
+                        output = "PROTOCOLCRISTOBAY1.0#ERROR#AUCTION_NOT_AVAILABLE";
                     }
                 }
                 
+            }else if(input.contains("GET_SUBASTA#")){
+                rsa = c.getConexion().executeQuery("SELECT * FROM articulo WHERE id_articulo = '"+input.split("#")[4].split("@")[0]+"'");
+                rs = c.getConexion().executeQuery("SELECT * FROM subastar WHERE id_articulo = '"+input.split("#")[4].split("@")[0]+"'");
+                rsa.first();
+                rs.first();
+                output = "PROTOCOLCRISTOBAY1.0#GET_SUBASTA#"+rsa.getInt("id_articulo")+"@"+rs.getString("fecha_inicio")+"@"+rs.getString("fecha_fin")+"#"+rsa.getString("descripcion")+"#"+rs.getString("imagen").split(".")[1]+"#<file_size_bytes>";
             }
         return output;
     }

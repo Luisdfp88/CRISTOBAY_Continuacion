@@ -5,6 +5,7 @@
  */
 package Controlador;
 
+import Modelo.Articulo;
 import Modelo.SubastaCln;
 import Vista.Login;
 import Vista.Ventana;
@@ -83,7 +84,27 @@ public class ConexionServer {
     }
     
     public void pedirSubastasPorEstado(String estado){
-        out.println("PROTOCOLCRISTOBAY1.0#GET_SUBASTAS_"+estado+"#"+lg.getNombreUsu()+"#"+lg.getCs().getPalabraSecreta(buffer));
+        String str = "ALL";
+        switch (estado) {
+            case "Abiertas":
+                str="OPEN";
+                break;
+            case "Cerradas por eliminación":
+                str="CLOSEDBYDROP";
+                break;
+            case "Cerradas por compra":
+                str="CLOSEDBYBUY";
+                break;
+            case "Cerradas por tiempo":
+                str="CLOSEDBYTIME";
+                break;
+            case "Creadas":
+                str="CREATED";
+                break;
+            default:
+                break;
+        }
+        out.println("PROTOCOLCRISTOBAY1.0#GET_SUBASTAS_"+str+"#"+lg.getNombreUsu()+"#"+lg.getCs().getPalabraSecreta(buffer));
     }
     
     public ArrayList<SubastaCln> getSubastas() throws IOException{
@@ -95,6 +116,7 @@ public class ConexionServer {
         str = in.readLine();
         String[] cadDiv = str.split("#");
         if(str.contains("ERROR")){
+            System.out.println(str);
             System.out.println("Hubo un error en su solicitud, intentelo de nuevo mas tarde");
         }else if(str.contains("AUCTION_AVAILABLE")){
             System.out.println(str);
@@ -102,11 +124,19 @@ public class ConexionServer {
             
             for(int i = 0;i<numSubastas;i++){
                 String sub[] = cadDiv[contSub].split("@");
-                subastas.add(new SubastaCln(Integer.valueOf(sub[0]),sub[1],sub[2],sub[3],sub[4],sub[5],Integer.valueOf(sub[6]),7));
+                subastas.add(new SubastaCln(Integer.valueOf(sub[0]),sub[1],sub[2],sub[3],sub[4].substring(1, sub[4].lastIndexOf("\"")),sub[5],Integer.valueOf(sub[6]),Integer.valueOf(sub[7])));
                 contSub++;
             }
         }
         
         return subastas;
+    }
+    
+    public String pedirDetallesArticulo(int id) throws IOException{
+        out.println("PROTOCOLCRISTOBAY1.0#GET_SUBASTA#"+buffer.split("#")[2]+"#"+this.getPalabraSecreta(buffer)+"#"+subastas.get(id).getCodProd()+"@"+subastas.get(id).getFechaInicio()+"@"+subastas.get(id).getFechaFin());
+        String str = "";
+        in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
+        str = in.readLine().split("#")[3];
+        return str;
     }
 }

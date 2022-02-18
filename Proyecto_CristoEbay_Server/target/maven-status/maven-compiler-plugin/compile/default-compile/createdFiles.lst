@@ -3,7 +3,9 @@ Controlador\HebraServer.class
 Controlador\Server$1.class
 Controlador\Server.class
 Modelo\CargaSubastas.class
+Controlador\Conexion.class
 Modelo\Protocolo.class
 Modelo\CargaArticulos.class
+Modelo\randomWordGen.class
 Modelo\Articulo.class
 Modelo\Puja.class
