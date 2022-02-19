@@ -139,6 +139,7 @@ public class Ventana extends javax.swing.JFrame {
         DescripcionLabel.setFocusable(false);
         jScrollPane3.setViewportView(DescripcionLabel);
 
+        imagenLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         imagenLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -328,7 +329,7 @@ public class Ventana extends javax.swing.JFrame {
         try {
             DescripcionLabel.setText(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow()).split("#")[3]);
             NombreLabel.setText(" "+cargarModelo.Modelo().getValueAt(TablaSubastas.getSelectedRow(), 1).toString());
-            imagenLabel.setIcon(cs.pedirImagen(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow())));
+            imagenLabel.setIcon(cs.getScaledImage(cs.pedirImagen(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow()))));
         } catch (IOException ex) {
             Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {

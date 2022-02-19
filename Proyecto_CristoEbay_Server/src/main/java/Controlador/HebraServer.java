@@ -17,13 +17,13 @@ import java.net.Socket;
  */
 public class HebraServer extends Thread{
     private Socket sc;
-    private Protocolo ptc;
+    private Protocolo ptc = new Protocolo();
     private int tamanoPaquete;
     
-    public HebraServer(Socket sc, Protocolo ptc){
+    public HebraServer(Socket sc){
         super("HebraServer");
         this.sc = sc;
-        this.ptc = ptc;
+  
     }
     
     public HebraServer getHebraServer(){
@@ -41,10 +41,10 @@ public class HebraServer extends Thread{
             String inputLine, outputLine;
             while((inputLine = in.readLine()) != null){
                 if(inputLine.contains("PREPARED_TO_RECEIVE")){
-                    for(int i = 0;i<Integer.valueOf(inputLine.split("#")[6]);i++){
-                            
-                            outputLine = ptc.procesarInput(inputLine+"#"+i+"#"+tamanoPaquete);
-                            tamanoPaquete = tamanoPaquete-255;
+                    for(int i = 0;i<Integer.valueOf(inputLine.split("#")[6]);i++){  
+                        outputLine = ptc.procesarInput(inputLine+"#"+i+"#"+tamanoPaquete);
+                        tamanoPaquete = tamanoPaquete-255;
+                        System.out.println(outputLine);
                         out.println(outputLine);
                     }
                 }else{
@@ -54,6 +54,7 @@ public class HebraServer extends Thread{
                     }
                     out.println(outputLine);
                 }
+                ptc.c.getConexion().close();
                 System.out.println();
             }
             

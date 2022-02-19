@@ -15,11 +15,6 @@ import java.util.ArrayList;
  * @author Luis
  */
 public class Server {
-    static Protocolo ptc = new Protocolo();
-
-    public Protocolo getPtc() {
-        return ptc;
-    }
     
     
     public static void main(String args[]) throws IOException {
@@ -31,7 +26,7 @@ public class Server {
             public void run(){
                 try(ServerSocket svsc = new ServerSocket(portNumber)){
                     while(listening){
-                        ArrayHebras.add(new HebraServer(svsc.accept(), ptc));
+                        ArrayHebras.add(new HebraServer(svsc.accept()));
                         ArrayHebras.get(ArrayHebras.size()-1).start();
                     }
                 }catch(IOException e){

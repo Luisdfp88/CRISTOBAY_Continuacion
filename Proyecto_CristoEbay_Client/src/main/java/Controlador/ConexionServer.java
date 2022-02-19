@@ -9,8 +9,12 @@ import Modelo.Articulo;
 import Modelo.SubastaCln;
 import Vista.Login;
 import Vista.Ventana;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -147,24 +151,23 @@ public class ConexionServer {
         return str;
     }
     
-    public ImageIcon pedirImagen(String img) throws IOException{
+    public Image pedirImagen(String img) throws IOException{
         int paquetes = Integer.valueOf(img.split("#")[5]);
-        int a = 0;
-        int b = 0;
+        int a,b;
         if(paquetes%256==0){
             a = paquetes/256;
             b = a;
         }else{
             a= (paquetes/256)+1;
+            b = a-1;
         }
         System.out.println(a);
-        out.println("PROTOCOLCRISTOBAY1.0#PREPARED_TO_RECEIVE#"+buffer.split("#")[2]+"#"+this.getPalabraSecreta(buffer)+"#"+img.split("#")[2].split("@")[0]+"#SIZE_PACKAGE#"+a);
         String str = "";
-        int prov;
-        String aux = "Hola";
-        
-        prov = 0;
+        int prov = 0;
+        out.println("PROTOCOLCRISTOBAY1.0#PREPARED_TO_RECEIVE#"+buffer.split("#")[2]+"#"+this.getPalabraSecreta(buffer)+"#"+img.split("#")[2].split("@")[0]+"#SIZE_PACKAGE#"+a);
+        String aux = "";
         while(prov!=b){
+            System.out.println("Inicio del bucle");
             in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
             aux = in.readLine();
             System.out.println(aux);
@@ -174,12 +177,22 @@ public class ConexionServer {
         }
         System.out.println(str);
         byte[] decodedBytes = Base64.getDecoder().decode(str);
-        File file = new File("");
-        //--------------------------------------------------------------------//
-        //ESTO ES LO QUE TIENES QUE ARREGLAR MAÑANA//
-        FileUtils.writeByteArrayToFile(file, decodedBytes);
-        Image image = ImageIO.read(file);
-        ImageIcon icon = new ImageIcon(image);
-        return icon;
+        Image image = ImageIO.read(new ByteArrayInputStream(decodedBytes));
+        String string = new String(decodedBytes);
+        System.out.println(string);
+        
+        return image;
     }
+    
+    public Icon getScaledImage(Image srcImg){
+    BufferedImage resizedImg = new BufferedImage(303, 303, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g2 = resizedImg.createGraphics();
+
+    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+    g2.drawImage(srcImg, 0, 0, 303, 303, null);
+    g2.dispose();
+    
+    Icon icon = new ImageIcon(resizedImg);
+    return icon;
+}
 }
