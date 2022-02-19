@@ -6,14 +6,17 @@
 package Modelo;
 
 import Controlador.Conexion;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -24,6 +27,7 @@ public class Protocolo {
     public ResultSet rsa;
     public ResultSet rsv;
     public ResultSet rsp;
+    int lim = 255;
     String output;
     ArrayList<String> tokens = new ArrayList<>();
     ArrayList<String> usuariosLogeados = new ArrayList<>();
@@ -147,7 +151,33 @@ public class Protocolo {
                 rs = c.getConexion().executeQuery("SELECT * FROM subastar WHERE id_articulo = '"+input.split("#")[4].split("@")[0]+"'");
                 rsa.first();
                 rs.first();
-                output = "PROTOCOLCRISTOBAY1.0#GET_SUBASTA#"+rsa.getInt("id_articulo")+"@"+rs.getString("fecha_inicio")+"@"+rs.getString("fecha_fin")+"#"+rsa.getString("descripcion")+"#"+rs.getString("imagen").split(".")[1]+"#<file_size_bytes>";
+                String str = ("C:"+rsa.getString("imagen"));
+                System.out.println(rsa.getString("imagen"));
+                File file = new File(str);
+                byte[] fileContent = FileUtils.readFileToByteArray(file);
+                output = "PROTOCOLCRISTOBAY1.0#GET_SUBASTA#"+rsa.getInt("id_articulo")+"@"+rs.getString("fecha_inicio")+"@"+rs.getString("fecha_fin")+"#"+rsa.getString("descripcion")+"#"+"jpg"+"#"+Base64.getEncoder().encodeToString(fileContent).length();
+                System.out.println(output);
+            }else if(input.contains("PREPARED_TO_RECEIVE")){
+                //TODO Enviar cada paquete
+                rsa = c.getConexion().executeQuery("SELECT * FROM articulo WHERE id_articulo = '"+input.split("#")[4]+"'");
+                rsa.first();
+                String str = ("C:"+rsa.getString("imagen"));
+                File file = new File(str);
+                int g = Integer.valueOf(input.split("#")[6])-1;
+                int h = Integer.valueOf(input.split("#")[7]);
+                int cadDePaso = lim*Integer.valueOf(input.split("#")[7]);
+                int tamanoUltPaq;
+                byte[] fileContent = FileUtils.readFileToByteArray(file);
+                String fotoenBase64 = Base64.getEncoder().encodeToString(fileContent);
+                if(g == h){
+                    tamanoUltPaq  = Integer.valueOf(input.split("#")[8]);
+                    System.out.println(tamanoUltPaq);
+                    output = "PROTOCOLCRISTOBAY1.0#"+input.split("#")[4]+"#"+fotoenBase64.substring(cadDePaso,cadDePaso+tamanoUltPaq)+"#"+input.split("#")[7];
+                }else{
+                    output = "PROTOCOLCRISTOBAY1.0#"+input.split("#")[4]+"#"+fotoenBase64.substring(cadDePaso,cadDePaso+lim)+"#"+input.split("#")[7];
+                }
+                
+                
             }
         return output;
     }

@@ -58,7 +58,7 @@ public class Ventana extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         DescripcionLabel = new javax.swing.JTextArea();
-        jLabel5 = new javax.swing.JLabel();
+        imagenLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         Nombre_Articulo_Nuevo = new javax.swing.JTextField();
@@ -139,7 +139,7 @@ public class Ventana extends javax.swing.JFrame {
         DescripcionLabel.setFocusable(false);
         jScrollPane3.setViewportView(DescripcionLabel);
 
-        jLabel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        imagenLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -155,7 +155,7 @@ public class Ventana extends javax.swing.JFrame {
                         .addComponent(jButton1))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                     .addComponent(NombreLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(imagenLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(58, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -163,7 +163,7 @@ public class Ventana extends javax.swing.JFrame {
             .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(39, 39, 39)
-                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(imagenLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(NombreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -311,7 +311,6 @@ public class Ventana extends javax.swing.JFrame {
 
     private void selectorEstadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectorEstadoActionPerformed
        
-        System.out.println(selectorEstado.getItemAt(selectorEstado.getSelectedIndex()));
         try {
             cargarModelo = new Modelo_Tabla(cs);
              cargarModelo.setEstado(selectorEstado.getItemAt(selectorEstado.getSelectedIndex()));
@@ -327,8 +326,9 @@ public class Ventana extends javax.swing.JFrame {
     private void TablaSubastasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TablaSubastasMouseClicked
        
         try {
-            DescripcionLabel.setText(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow()));
+            DescripcionLabel.setText(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow()).split("#")[3]);
             NombreLabel.setText(" "+cargarModelo.Modelo().getValueAt(TablaSubastas.getSelectedRow(), 1).toString());
+            imagenLabel.setIcon(cs.pedirImagen(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow())));
         } catch (IOException ex) {
             Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -349,13 +349,13 @@ public class Ventana extends javax.swing.JFrame {
     private javax.swing.JLabel NombreLabel;
     private static javax.swing.JTextField Nombre_Articulo_Nuevo;
     private static javax.swing.JTable TablaSubastas;
+    private javax.swing.JLabel imagenLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

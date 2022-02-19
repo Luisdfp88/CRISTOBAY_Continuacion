@@ -9,14 +9,21 @@ import Modelo.Articulo;
 import Modelo.SubastaCln;
 import Vista.Login;
 import Vista.Ventana;
+import java.awt.Image;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -136,7 +143,43 @@ public class ConexionServer {
         out.println("PROTOCOLCRISTOBAY1.0#GET_SUBASTA#"+buffer.split("#")[2]+"#"+this.getPalabraSecreta(buffer)+"#"+subastas.get(id).getCodProd()+"@"+subastas.get(id).getFechaInicio()+"@"+subastas.get(id).getFechaFin());
         String str = "";
         in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
-        str = in.readLine().split("#")[3];
+        str = in.readLine();
         return str;
+    }
+    
+    public ImageIcon pedirImagen(String img) throws IOException{
+        int paquetes = Integer.valueOf(img.split("#")[5]);
+        int a = 0;
+        int b = 0;
+        if(paquetes%256==0){
+            a = paquetes/256;
+            b = a;
+        }else{
+            a= (paquetes/256)+1;
+        }
+        System.out.println(a);
+        out.println("PROTOCOLCRISTOBAY1.0#PREPARED_TO_RECEIVE#"+buffer.split("#")[2]+"#"+this.getPalabraSecreta(buffer)+"#"+img.split("#")[2].split("@")[0]+"#SIZE_PACKAGE#"+a);
+        String str = "";
+        int prov;
+        String aux = "Hola";
+        
+        prov = 0;
+        while(prov!=b){
+            in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
+            aux = in.readLine();
+            System.out.println(aux);
+            prov = Integer.valueOf(aux.split("#")[3]);
+            in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
+            str = str + aux.split("#")[2];
+        }
+        System.out.println(str);
+        byte[] decodedBytes = Base64.getDecoder().decode(str);
+        File file = new File("");
+        //--------------------------------------------------------------------//
+        //ESTO ES LO QUE TIENES QUE ARREGLAR MAÑANA//
+        FileUtils.writeByteArrayToFile(file, decodedBytes);
+        Image image = ImageIO.read(file);
+        ImageIcon icon = new ImageIcon(image);
+        return icon;
     }
 }

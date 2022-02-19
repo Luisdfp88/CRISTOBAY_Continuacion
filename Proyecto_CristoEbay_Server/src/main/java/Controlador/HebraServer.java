@@ -18,6 +18,7 @@ import java.net.Socket;
 public class HebraServer extends Thread{
     private Socket sc;
     private Protocolo ptc;
+    private int tamanoPaquete;
     
     public HebraServer(Socket sc, Protocolo ptc){
         super("HebraServer");
@@ -39,8 +40,20 @@ public class HebraServer extends Thread{
         ){
             String inputLine, outputLine;
             while((inputLine = in.readLine()) != null){
-                outputLine = ptc.procesarInput(inputLine);
-                out.println(outputLine);
+                if(inputLine.contains("PREPARED_TO_RECEIVE")){
+                    for(int i = 0;i<Integer.valueOf(inputLine.split("#")[6]);i++){
+                            
+                            outputLine = ptc.procesarInput(inputLine+"#"+i+"#"+tamanoPaquete);
+                            tamanoPaquete = tamanoPaquete-255;
+                        out.println(outputLine);
+                    }
+                }else{
+                    outputLine = ptc.procesarInput(inputLine);
+                    if(outputLine.contains("GET_SUBASTA#")){
+                        tamanoPaquete = Integer.valueOf(outputLine.split("#")[5]);
+                    }
+                    out.println(outputLine);
+                }
                 System.out.println();
             }
             
