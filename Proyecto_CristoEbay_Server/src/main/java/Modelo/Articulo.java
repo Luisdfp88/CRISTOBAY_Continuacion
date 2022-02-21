@@ -17,7 +17,7 @@ public class Articulo {
     public String imagen;
     public String descripcion;
     
-    public Articulo(int a, String n, String i, String d){
+    public Articulo(int a, String n, String d, String i){
         id_articulo = a;
         nombre=n;
         imagen=i;

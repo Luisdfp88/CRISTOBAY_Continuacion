@@ -40,7 +40,7 @@ public class ConexionServer {
     Login lg;
     Ventana v;
     String buffer;
-    ArrayList<SubastaCln> subastas;
+    ArrayList<SubastaCln> subastas = new ArrayList<>();;
     
     public ConexionServer() throws IOException{
         sc = new Socket("localhost",6666);
@@ -73,19 +73,11 @@ public class ConexionServer {
     public ConexionServer getConexionServer(){
         return this;
     }
-    public void logearse(){
+    public String logearse() throws IOException{
         out.println("PROTOCOLCRISTOBAY1.0#LOGIN#"+lg.getNombreUsu()+"#"+lg.getPassUsu());
-    }
-    
-    public String respuestaLogin(){
-        
-        try {
-            in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
-            buffer = in.readLine();
-            System.out.println(buffer);
-        } catch (IOException ex) {
-            Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
+        buffer = in.readLine();
+        System.out.println(buffer);
         return buffer;
     }
     
@@ -120,7 +112,7 @@ public class ConexionServer {
     
     public ArrayList<SubastaCln> getSubastas() throws IOException{
         
-        subastas = new ArrayList<>();
+        subastas.clear();
         String str="";
         int contSub = 3;
         in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
@@ -185,14 +177,32 @@ public class ConexionServer {
     }
     
     public Icon getScaledImage(Image srcImg){
-    BufferedImage resizedImg = new BufferedImage(303, 303, BufferedImage.TYPE_INT_ARGB);
-    Graphics2D g2 = resizedImg.createGraphics();
+        BufferedImage resizedImg = new BufferedImage(303, 303, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = resizedImg.createGraphics();
 
-    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-    g2.drawImage(srcImg, 0, 0, 303, 303, null);
-    g2.dispose();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(srcImg, 0, 0, 303, 303, null);
+        g2.dispose();
+
+        Icon icon = new ImageIcon(resizedImg);
+        return icon;
+    }
     
-    Icon icon = new ImageIcon(resizedImg);
-    return icon;
-}
+    public void pujar(int i, int p) throws IOException{
+        out.println("PROTOCOLCRISTOBAY1.0#BID_PRODUCT#"+buffer.split("#")[2]+"#"+this.getPalabraSecreta(buffer)+"#"+subastas.get(i).getCodProd()+"@"+subastas.get(i).getFechaInicio()+"@"+subastas.get(i).getFechaFin()+"#"+p);
+        in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
+        String str = in.readLine();
+        System.out.println(str);
+    }
+    
+    public boolean cerrarSesion() throws IOException{
+        out.println("PROTOCOLCRISTOBAY1.0#BYE#"+lg.getNombreUsu()+"#"+this.getPalabraSecreta(buffer));
+        in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
+        String str = in.readLine();
+        if(str.contains("VAYAUSTEDCONDIOS")){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }

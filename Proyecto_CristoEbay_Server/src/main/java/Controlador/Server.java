@@ -15,19 +15,21 @@ import java.util.ArrayList;
  * @author Luis
  */
 public class Server {
-    
+    static Protocolo ptc = new Protocolo();
+    static ArrayList<HebraServer> ArrayHebras;
     
     public static void main(String args[]) throws IOException {
         int portNumber = Integer.parseInt(args[0]);
         boolean listening = true;
-        ArrayList<HebraServer> ArrayHebras = new ArrayList<>();
+        ArrayHebras = new ArrayList<>();
         Thread thr = new Thread(){
             @Override
             public void run(){
                 try(ServerSocket svsc = new ServerSocket(portNumber)){
                     while(listening){
-                        ArrayHebras.add(new HebraServer(svsc.accept()));
+                        ArrayHebras.add(new HebraServer(svsc.accept(), ptc));
                         ArrayHebras.get(ArrayHebras.size()-1).start();
+                        
                     }
                 }catch(IOException e){
                 System.err.println("No se ha podido escuchar el puerto " + portNumber);
@@ -36,5 +38,9 @@ public class Server {
             }
         };
         thr.start();
+    }
+    
+    public ArrayList<HebraServer> getClientesConectados(){
+        return ArrayHebras;
     }
 }

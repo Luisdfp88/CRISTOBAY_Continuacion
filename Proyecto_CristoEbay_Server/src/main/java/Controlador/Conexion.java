@@ -13,7 +13,7 @@ public class Conexion {
         static Statement s;
     public Conexion(){
         try{
-            s =DriverManager.getConnection("jdbc:mariadb://localhost:3306/cristobay_db","root","root").createStatement();  
+            s =DriverManager.getConnection("jdbc:mysql://localhost:3306/cristobay_db","root","root").createStatement();  
         }catch(SQLException e){
          
         }
