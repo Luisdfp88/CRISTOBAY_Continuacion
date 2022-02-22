@@ -15,9 +15,9 @@ import java.util.ArrayList;
  * @author Luis
  */
 public class Server {
-    static Protocolo ptc = new Protocolo();
-    static ArrayList<HebraServer> ArrayHebras;
-    
+   
+    static ArrayList<HebraServer> ArrayHebras = new ArrayList<>();
+    static Protocolo ptc = new Protocolo(ArrayHebras);
     public static void main(String args[]) throws IOException {
         int portNumber = Integer.parseInt(args[0]);
         boolean listening = true;

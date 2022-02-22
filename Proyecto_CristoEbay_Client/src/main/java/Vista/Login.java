@@ -149,13 +149,14 @@ public class Login extends javax.swing.JFrame{
         passUsu = campoPassword.getText();
         try {
             cs =  new ConexionServer(lg);
-            String str = cs.logearse();
-        if(str.contains("WELLCOME")){
-            new Ventana(cs).setVisible(true);
-            this.dispose();
-        }else{
-            System.out.println("Ha fallado");
-        }
+            cs.start();
+            cs.logearse();
+//        if(str.contains("WELLCOME")){
+////            new Ventana(cs).setVisible(true);
+//            this.dispose();
+//        }else{
+//            System.out.println("Ha fallado");
+//        }
         } catch (IOException ex) {
             Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -6,6 +6,7 @@
 package Modelo;
 
 import Controlador.Conexion;
+import Controlador.HebraServer;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -23,6 +24,11 @@ import org.apache.commons.io.FileUtils;
  * @author Luis
  */
 public class Protocolo {
+    
+    ArrayList<HebraServer> arrayHebras;
+    public Protocolo(ArrayList<HebraServer> a){
+        this.arrayHebras = a;
+    }
     public ResultSet rs;
     public Conexion c = new Conexion();
     ArrayList<Usuario> usuarios= new ArrayList<>();
@@ -33,8 +39,7 @@ public class Protocolo {
     String output;
     ArrayList<String> tokens = new ArrayList<>();
     ArrayList<String> usuariosLogeados = new ArrayList<>();
-    public String procesarInput(String input) throws IOException, SQLException{ 
-        System.out.println(input);
+    public String procesarInput(String input) throws IOException, SQLException{
         if(input.contains("LOGIN")){
             int aux1 = input.indexOf("#", 28);
             try {
@@ -183,18 +188,20 @@ public class Protocolo {
             Articulo artDetalles = new Articulo(rs.getInt("id_articulo"),rs.getString("nombre"),rs.getString("descripcion"),rs.getString("imagen"));
             String str = ("C:"+artDetalles.getImagen());
             File file = new File(str);
-            int g = Integer.valueOf(input.split("#")[6])-1;
-            int h = Integer.valueOf(input.split("#")[7]);
+            int g = Integer.valueOf(input.split("#")[6]);
+            int h = Integer.valueOf(input.split("#")[7])+1;
             int cadDePaso = lim*Integer.valueOf(input.split("#")[7]);
             int tamanoUltPaq;
             byte[] fileContent = FileUtils.readFileToByteArray(file);
             String fotoenBase64 = Base64.getEncoder().encodeToString(fileContent);
+            System.out.println(fotoenBase64.getBytes().length);
+            System.out.println(g+" "+h);
             if(g == h){
                 tamanoUltPaq  = Integer.valueOf(input.split("#")[8]);
                 System.out.println(tamanoUltPaq);
-                output = "PROTOCOLCRISTOBAY1.0#"+input.split("#")[4]+"#"+fotoenBase64.substring(cadDePaso,cadDePaso+tamanoUltPaq)+"#"+input.split("#")[7];
+                output = "PROTOCOLCRISTOBAY1.0#"+input.split("#")[4]+"#"+fotoenBase64.substring(cadDePaso,cadDePaso+tamanoUltPaq)+"#"+"BITS"+input.split("#")[7];
             }else{
-                output = "PROTOCOLCRISTOBAY1.0#"+input.split("#")[4]+"#"+fotoenBase64.substring(cadDePaso,cadDePaso+lim)+"#"+input.split("#")[7];
+                output = "PROTOCOLCRISTOBAY1.0#"+input.split("#")[4]+"#"+fotoenBase64.substring(cadDePaso,cadDePaso+lim)+"#"+"BITS"+input.split("#")[7];
             }
         }else if(input.contains("BID_PRODUCT")){
             int cantPuj = Integer.valueOf(input.split("#")[5]);
@@ -207,7 +214,7 @@ public class Protocolo {
                 pujasArticulo.add(new Puja(rs.getInt("id_usuario"),rs.getInt("id_articulo"),rs.getString("fecha_y_hora"),rs.getString("fecha_inicio"),rs.getString("fecha_fin"),rs.getInt("cantidad_pujada")));
             }
             for(int x = 0;x<pujasArticulo.size();x++){
-                if(pujasArticulo.get(x).getCantidad_pujada()>cantPuj){
+                if(pujasArticulo.get(x).getCantidad_pujada()>=cantPuj){
                     return "PROTOCOLCRISTOBAY1.0#BID_REJECTED#"+input.split("#")[4].split("@")[0]+"@"+input.split("#")[4].split("@")[1]+"@"+input.split("#")[4].split("@")[2]+"#"+input.split("#")[2];
                 }
             }       
@@ -226,6 +233,13 @@ public class Protocolo {
                 }else{
                     System.out.println("INSERT INTO pujar (fecha_y_hora, id_usuario, id_articulo,fecha_inicio,fecha_fin,cantidad_pujada) VALUES ('"+now.format(formatter)+"',"+userLogged.getId_usuario()+","+input.split("#")[4].split("@")[0]+",'"+input.split("#")[4].split("@")[1]+"','"+input.split("#")[4].split("@")[2]+"',"+input.split("#")[5]+")");
                     c.getConexion().execute("INSERT INTO pujar (fecha_y_hora, id_usuario, id_articulo,fecha_inicio,fecha_fin,cantidad_pujada) VALUES ('"+LocalDateTime.now()+"',"+userLogged.getId_usuario()+","+input.split("#")[4].split("@")[0]+",'"+input.split("#")[4].split("@")[1]+"','"+input.split("#")[4].split("@")[2]+"',"+input.split("#")[5]+")");
+                    for(int w = 0;w<arrayHebras.size();w++){
+                        if(arrayHebras.get(w).getName().equals(input.split("#")[3])){
+                            
+                        }else{
+                        arrayHebras.get(w).out.println("PROTOCOLCRISTOBAY1.0#BID_ACCEPTED#"+input.split("#")[4].split("@")[0]+"@"+input.split("#")[4].split("@")[1]+"@"+input.split("#")[4].split("@")[2]+"#"+input.split("#")[2]+"#<fecha_y_hora_puja>@"+cantPuj);
+                        }
+                    }
                     output = "PROTOCOLCRISTOBAY1.0#BID_ACCEPTED#"+input.split("#")[4].split("@")[0]+"@"+input.split("#")[4].split("@")[1]+"@"+input.split("#")[4].split("@")[2]+"#"+input.split("#")[2]+"#<fecha_y_hora_puja>@"+cantPuj;
                 }
             }else{

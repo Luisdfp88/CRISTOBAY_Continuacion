@@ -25,6 +25,17 @@ public class Modelo_Tabla{
         this.cs = cs;
     }
 
+    public void setAr(ArrayList<SubastaCln> ar) {
+        this.ar = ar;
+    }
+    
+    
+    
+    public Modelo_Tabla(ConexionServer cs,String estado){
+        this.cs = cs;
+        this.estado = estado;
+    }
+
     public void setEstado(String estado) {
         this.estado = estado;
     }
@@ -32,9 +43,7 @@ public class Modelo_Tabla{
     
 
     public TableModel Modelo() throws SQLException, IOException{
-        System.out.println(cs.getPalabraSecreta(cs.getBuffer()));
-        cs.pedirSubastasPorEstado(estado);
-        ar = cs.getSubastas();
+        System.out.println(cs.getPalabraSecreta(cs.getBuffer()));        
         String col[] = {"Usuario","Articulo","Fecha de Inicio","Fecha Fin","Estado","Puja Actual"};
         modelo = new DefaultTableModel(col, 0);
         for(int i = 0;i<ar.size();i++){

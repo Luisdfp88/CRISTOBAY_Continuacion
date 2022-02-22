@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 
 /**
@@ -31,18 +32,29 @@ public class Ventana extends javax.swing.JFrame {
         Ventana.cs = cs;
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    cargarModelo = new Modelo_Tabla(cs);
-                    TablaSubastas.setModel(cargarModelo.Modelo());
-                } catch (SQLException ex) {
-                    Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                cargarModelo = cs.getMt();
             }
         });
     }
+
+    public String getEstado(){
+        return selectorEstado.getItemAt(selectorEstado.getSelectedIndex());
+    }
+    public JLabel getImagenLabel() {
+        return imagenLabel;
+    }
+
+    public void setCargarModelo(Modelo_Tabla cargarModelo) {
+        this.cargarModelo = cargarModelo;
+    }
+
+    public JTable getTablaSubastas() {
+        return TablaSubastas;
+    }
     
+    public void setDescripcionArticulo(String str){
+        DescripcionLabel.setText(str);
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -168,6 +180,10 @@ public class Ventana extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton4)
+                        .addContainerGap())
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(65, 65, 65)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -175,14 +191,10 @@ public class Ventana extends javax.swing.JFrame {
                                 .addComponent(pujaField, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(jButton1))
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
                             .addComponent(NombreLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(imagenLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton4)
-                        .addContainerGap())))
+                            .addComponent(imagenLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE))
+                        .addContainerGap(68, Short.MAX_VALUE))))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -338,25 +350,22 @@ public class Ventana extends javax.swing.JFrame {
     }//GEN-LAST:event_Campo_Precio_SalidaActionPerformed
 
     private void selectorEstadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectorEstadoActionPerformed
-       
-        try {
-            cargarModelo = new Modelo_Tabla(cs);
-             cargarModelo.setEstado(selectorEstado.getItemAt(selectorEstado.getSelectedIndex()));
-            TablaSubastas.setModel(cargarModelo.Modelo());
-        } catch (IOException ex) {
-            Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
-        }
-                    
+        cs.pedirSubastasPorEstado(selectorEstado.getItemAt(selectorEstado.getSelectedIndex()));
+        cargarModelo = cs.getMt();
     }//GEN-LAST:event_selectorEstadoActionPerformed
 
     private void TablaSubastasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TablaSubastasMouseClicked
        
         try {
-            DescripcionLabel.setText(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow()).split("#")[3]);
+            cs.setArticuloSeleccionado(TablaSubastas.getSelectedRow());
+            cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow());
+        } catch (IOException ex) {
+            Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+//            DescripcionLabel.setText(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow()).split("#")[3]);
             NombreLabel.setText(" "+cargarModelo.Modelo().getValueAt(TablaSubastas.getSelectedRow(), 1).toString());
-            imagenLabel.setIcon(cs.getScaledImage(cs.pedirImagen(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow()))));
+//            imagenLabel.setIcon(cs.getScaledImage(cs.pedirImagen(cs.pedirDetallesArticulo(TablaSubastas.getSelectedRow()))));
         } catch (IOException ex) {
             Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -377,13 +386,8 @@ public class Ventana extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton4MouseClicked
-        boolean a;
         try {
-            a = cs.cerrarSesion();
-            if(a){
-                new Login().setVisible(true);
-                this.dispose();
-            }
+            cs.cerrarSesion();
         } catch (IOException ex) {
             Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -424,5 +428,5 @@ public class Ventana extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     static ConexionServer cs;
     static Ventana v;
-    static Modelo_Tabla cargarModelo;
+    Modelo_Tabla cargarModelo;
 }
