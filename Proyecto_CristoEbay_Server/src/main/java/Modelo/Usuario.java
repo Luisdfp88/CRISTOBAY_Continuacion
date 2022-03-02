@@ -18,6 +18,7 @@ public class Usuario {
     String apellido1;
     String apellido2;
     String correo;
+    boolean connected;
     
     public Usuario(int i, String l, String n){
         this.login = l;
@@ -25,6 +26,11 @@ public class Usuario {
         this.nombre = n;
     }
 
+    public Usuario(int i, String l, int c){
+        this.id_usuario=i;
+        this.login=l;
+        this.connected = c != 0;
+    }
     public int getId_usuario() {
         return id_usuario;
     }

@@ -6,6 +6,7 @@
 package Controlador;
 
 import Modelo.Protocolo;
+import Vista.VentanaServidor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,16 +25,24 @@ public class HebraServer extends Thread{
     private Protocolo ptc;
     private int tamanoPaquete;
     private Server sv;
+    private VentanaServidor vs;
     private BufferedReader in;
     public PrintWriter out;
+    public String nombreUsuario;
     
-    public HebraServer(Socket sc, Protocolo ptc) throws IOException{
-        super("HebraServer");
+    public HebraServer(Socket sc, Protocolo ptc, VentanaServidor vs, String token) throws IOException{
+        super(token);
         this.sc = sc;
         this.ptc = ptc;
         out = new PrintWriter(sc.getOutputStream(),true);
         in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
-        
+        this.vs = vs;
+        this.ptc.tokens.add(token);
+    }
+    
+    public void cerrarSocket() throws IOException{
+        out.close();
+        sc.close();
     }
     
     public HebraServer getHebraServer(){
@@ -43,13 +52,17 @@ public class HebraServer extends Thread{
         return sc;
     }
     @Override
-    public void run(){
+    public synchronized void run(){
         {
             try {
                 String inputLine, outputLine;
                 while((inputLine = in.readLine()) != null){
-                    System.out.println(inputLine);
+                    if(inputLine.contains("LOGIN")){
+                        nombreUsuario=inputLine.split("#")[2];
+                    }
+                    vs.escribirConsola(inputLine);
                     if(inputLine.contains("PREPARED_TO_RECEIVE")){
+                        
                         this.setName(inputLine.split("#")[3]);
                         for(int i = 0;i<Integer.valueOf(inputLine.split("#")[6]);i++){
                             outputLine = ptc.procesarInput(inputLine+"#"+i+"#"+tamanoPaquete);
@@ -66,20 +79,60 @@ public class HebraServer extends Thread{
                             out.close();
                             in.close();
                             sc.close();
+                            vs.limpiarListaUsuarios();
+                            for(int j = 0;j<sv.ArrayHebras.size();j++){
+                                if(outputLine.split("#")[3].equals(this.getName())){
+                                    sv.ArrayHebras.remove(j);
+                                    ptc.usuariosLogeados.remove(j);
+                                    ptc.tokens.remove(j);
+
+                                }
+                                vs.escribirUsuarios(ptc.usuariosLogeados.get(j));
+                                
+                            }
+                            vs.limpiarListaUsuarios();
+                            for(int i = 0;i<ptc.usuariosLogeados.size();i++){
+                                vs.escribirUsuarios(ptc.usuariosLogeados.get(i));
+                            }
+                            
                             this.finalize();
+                        }else if(outputLine.contains("WELLCOME")){
+                            vs.limpiarListaUsuarios();
+                            for (int i = 0;i<ptc.usuariosLogeados.size();i++) {
+                                vs.escribirUsuarios(ptc.usuariosLogeados.get(i));
+                            }
                         }
+                        System.out.println(outputLine);
                         out.println(outputLine);
                     }
                     
                     System.out.println();
-                }   sc.close();
+                }   
+                sc.close();
             } catch (IOException ex) {
-                Logger.getLogger(HebraServer.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("1");
+                try {
+                    ptc.c.getConexion().execute("UPDATE usuario SET connected = '0' WHERE login = '"+nombreUsuario+"'");
+                    vs.limpiarListaUsuarios();
+                    for(int i = 0;i<ptc.usuariosLogeados.size();i++){
+                        if(nombreUsuario.equals(ptc.usuariosLogeados.get(i))){
+                            ptc.usuariosLogeados.remove(i);
+                            ptc.tokens.remove(i);
+                            ptc.arrayHebras.remove(i);
+                            sv.ArrayHebras.remove(i);
+                        }
+                        vs.escribirUsuarios(ptc.usuariosLogeados.get(i));
+                    }
+                    System.out.println("UPDATE usuario SET connected = '0' WHERE login = '"+nombreUsuario+"'");
+                } catch (SQLException ex1) {
+                    Logger.getLogger(HebraServer.class.getName()).log(Level.SEVERE, null, ex1);
+                }
             } catch (SQLException ex) {
-                Logger.getLogger(HebraServer.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("2");
+                
             } catch (Throwable ex) {
-                Logger.getLogger(HebraServer.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                System.out.println("3");
+            } 
         }
     }
 }

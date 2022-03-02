@@ -1,11 +1,14 @@
-Modelo\Subasta.class
 Controlador\HebraServer.class
 Controlador\Server$1.class
-Controlador\Server.class
 Modelo\CargaSubastas.class
+Modelo\Usuario.class
+Vista\VentanaServidor$1.class
 Controlador\Conexion.class
-Modelo\Protocolo.class
 Modelo\CargaArticulos.class
+Vista\VentanaServidor.class
+Modelo\Subasta.class
+Controlador\Server.class
+Modelo\Protocolo.class
 Modelo\randomWordGen.class
 Modelo\Articulo.class
 Modelo\Puja.class

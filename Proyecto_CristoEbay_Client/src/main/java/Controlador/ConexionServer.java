@@ -9,18 +9,13 @@ import Modelo.Articulo;
 import Modelo.SubastaCln;
 import Vista.Login;
 import Vista.Ventana;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.logging.Level;
@@ -53,13 +48,13 @@ public class ConexionServer  extends Thread{
     
     
     public ConexionServer() throws IOException{
-        sc = new Socket("localhost",6666);
+        sc = new Socket("2.137.110.162",7171);
         out = new PrintWriter(sc.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
     }
     
     public ConexionServer(Login lg) throws IOException{
-        sc = new Socket("localhost",6666);
+        sc = new Socket("2.137.110.162",7171);
         out = new PrintWriter(sc.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
         this.lg = lg;
@@ -70,12 +65,13 @@ public class ConexionServer  extends Thread{
         try {
             String inputLine;
             while((inputLine = in.readLine()) != null){
+                System.out.println(inputLine);
                 if(inputLine.contains("WELLCOME")){
                     buffer = inputLine;
                     subastas.clear();
                     this.pedirSubastasPorEstado("ALL");
                     v = new Ventana(this);
-                    lg.dispose();
+                    lg.setVisible(false);
                 }else if(inputLine.contains("BAD_LOGIN")){
                     System.out.println("Ha fallado");
                 }else if(inputLine.contains("AUCTION_AVAILABLE")){
@@ -120,14 +116,32 @@ public class ConexionServer  extends Thread{
                 }else if(inputLine.contains("BID_ACCEPTED")){
                     this.pedirSubastasPorEstado(v.getEstado());
                 }else if(inputLine.contains("VAYAUSTEDCONDIOS")){
-                    new Login().setVisible(true);
+                    lg.setVisible(true);
                     v.dispose();
+                }else if(inputLine.contains("REFRESH")){
+                    String[] cadDiv = inputLine.split("#");
+                    int contSub = 3;
+                    int numSubastas = Integer.valueOf(cadDiv[2]);
+                    subastas.clear();
+                    for(int i = 0;i<numSubastas;i++){
+                        String sub[] = cadDiv[contSub].split("@");
+                        subastas.add(new SubastaCln(Integer.valueOf(sub[0]),sub[1],sub[2],sub[3],cadDiv[contSub].substring(cadDiv[contSub].indexOf("\"")+1,cadDiv[contSub].lastIndexOf("\"")),sub[sub.length-3],Integer.valueOf(sub[sub.length-2]),Integer.valueOf(sub[sub.length-1])));
+                        contSub++;
+                    }
+                    mt.setAr(subastas);
+                    v.getTablaSubastas().setModel(mt.Modelo());
+                }else if(inputLine.contains("CONNECTED_USERS")){
+                    String str;
+                    v.getUsuariosConectados().setText("");
+                    for(int i=3;i<inputLine.split("#").length;i++){
+                        v.getUsuariosConectados().setText(v.getUsuariosConectados().getText()+"\n"+inputLine.split("#")[i]);
+                    }
+                    
                 }
             }
-        } catch (IOException ex) {
+        } catch (IOException | SQLException ex) {
             Logger.getLogger(ConexionServer.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(ConexionServer.class.getName()).log(Level.SEVERE, null, ex);
+            System.exit(0);
         }
     }
 
@@ -165,6 +179,33 @@ public class ConexionServer  extends Thread{
         this.articuloSeleccionado = subastas.get(articuloSeleccionado).getCodProd();
     }
     
+    public void verUsuarios(){
+        out.println("PROTOCOLOCRISTOBAY1.0#GET_CONNECTED_USERS#"+lg.getNombreUsu()+"#"+lg.getCs().getPalabraSecreta(buffer));
+    }
+    
+    public void refrescar(String estado){
+        String str = "ALL";
+        switch (estado) {
+            case "Abiertas":
+                str="OPEN";
+                break;
+            case "Cerradas por eliminación":
+                str="CLOSEDBYDROP";
+                break;
+            case "Cerradas por compra":
+                str="CLOSEDBYBUY";
+                break;
+            case "Cerradas por tiempo":
+                str="CLOSEDBYTIME";
+                break;
+            case "Creadas":
+                str="CREATED";
+                break;
+            default:
+                break;
+        }
+        out.println("PROTOCOLCRISTOBAY1.0#REFRESH_"+str+"#"+LocalDate.now()+"#"+LocalTime.now());
+    }
     
     public ConexionServer getConexionServer(){
         return this;
